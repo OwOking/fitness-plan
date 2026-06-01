@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#2f7d5c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="减脂训练">
+  <title>4周减脂日历训练台</title>
+  <style>
+    :root {
+      --bg: #f5f6f2;
+      --panel: #ffffff;
+      --ink: #1f2933;
+      --muted: #667085;
+      --line: #dde3dc;
+      --green: #2f7d5c;
+      --green-soft: #e7f2ec;
+      --blue: #315a8c;
+      --blue-soft: #e8eef7;
+      --orange: #d97706;
+      --orange-soft: #fff4df;
+      --red: #b42318;
+      --red-soft: #fff1f0;
+      --shadow: 0 12px 30px rgba(31, 41, 51, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.52;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px clamp(14px, 4vw, 38px);
+      border-bottom: 1px solid rgba(221, 227, 220, 0.9);
+      background: rgba(245, 246, 242, 0.94);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--green);
+      font-weight: 900;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .button,
+    .date-button,
+    .exercise-button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 12px;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .button.primary {
+      border-color: var(--green);
+      color: #fff;
+      background: var(--green);
+    }
+
+    .button.warn {
+      border-color: #ffd0c9;
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .button:focus-visible,
+    .date-button:focus-visible,
+    .exercise-button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid rgba(49, 90, 140, 0.24);
+      outline-offset: 2px;
+    }
+
+    main {
+      width: min(1220px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 18px 0 48px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 370px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .layout > * {
+      min-width: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .calendar-panel {
+      position: sticky;
+      top: 82px;
+      overflow: hidden;
+      padding: 16px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .panel-title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+      max-width: 100%;
+    }
+
+    .weekday {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .date-button {
+      position: relative;
+      min-height: 56px;
+      padding: 7px 5px;
+      text-align: left;
+    }
+
+    .date-button strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .date-button span {
+      display: block;
+      margin-top: 6px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .date-button.today::after {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--orange);
+      content: "";
+    }
+
+    .date-button.selected {
+      border-color: var(--green);
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .date-button.done {
+      border-color: #b9dec9;
+    }
+
+    .date-button.done span::before {
+      content: "已完成 · ";
+    }
+
+    .calendar-legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .legend-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      content: "";
+    }
+
+    .legend-dot.rest::before {
+      background: var(--orange);
+    }
+
+    .day-panel {
+      padding: clamp(16px, 3vw, 24px);
+    }
+
+    .day-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: start;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .date-kicker {
+      margin: 0 0 6px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .day-header h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .day-header p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .status-card {
+      min-width: 220px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+    }
+
+    .status-card label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 900;
+    }
+
+    .status-card input {
+      width: 19px;
+      height: 19px;
+      accent-color: var(--green);
+    }
+
+    .status-card p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .daily-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .subpanel {
+      min-width: 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfa;
+    }
+
+    .subpanel h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    .food-list,
+    .compact-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .food-list li,
+    .compact-list li {
+      padding: 10px 11px;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .food-list strong,
+    .compact-list strong {
+      color: var(--ink);
+    }
+
+    .exercise-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .exercise-button {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+      padding: 11px 12px;
+      text-align: left;
+    }
+
+    .exercise-button strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    .exercise-button span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .exercise-button .sets {
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: var(--blue);
+      background: var(--blue-soft);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .exercise-item {
+      display: grid;
+      gap: 7px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .exercise-item .exercise-button {
+      border: 0;
+      padding: 4px;
+      background: transparent;
+    }
+
+    .status-chips {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .status-chip {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: #f7f8f5;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .status-chip[data-status="done"].active {
+      border-color: #b9dec9;
+      color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .status-chip[data-status="skip"].active {
+      border-color: #f5d08a;
+      color: var(--orange);
+      background: var(--orange-soft);
+    }
+
+    .status-chip[data-status="pain"].active {
+      border-color: #ffc5bd;
+      color: var(--red);
+      background: var(--red-soft);
+    }
+
+    .status-chip[data-status="clear"].active {
+      border-color: var(--line);
+      color: var(--muted);
+      background: #f7f8f5;
+    }
+
+    .safety {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #ffd6d1;
+      border-radius: 8px;
+      color: var(--red);
+      background: var(--red-soft);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .record-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .field label,
+    .notes label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .field input,
+    .notes textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .field input {
+      height: 40px;
+      padding: 8px 10px;
+    }
+
+    .notes {
+      margin-top: 12px;
+    }
+
+    .notes textarea {
+      min-height: 96px;
+      padding: 11px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .record-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    dialog {
+      width: min(760px, calc(100% - 24px));
+      border: 0;
+      border-radius: 8px;
+      padding: 0;
+      background: transparent;
+    }
+
+    dialog::backdrop {
+      background: rgba(31, 41, 51, 0.42);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-head h3 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .modal-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .modal-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .exercise-visual {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      min-height: 230px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #fbfcfa 0%, #f1f5ef 100%);
+    }
+
+    .exercise-visual svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .cue-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .cue {
+      padding: 12px;
+      border-radius: 8px;
+      background: #f7f8f5;
+    }
+
+    .cue strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+
+    .cue p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .record-output {
+      width: 100%;
+      min-height: 210px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fbfcfa;
+      font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      resize: vertical;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 40;
+      display: none;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--green);
+      box-shadow: var(--shadow);
+      font-weight: 900;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .mobile-bottom-bar {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 30;
+      display: none;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(221, 227, 220, 0.95);
+      background: rgba(245, 246, 242, 0.96);
+      backdrop-filter: blur(14px);
+    }
+
+    .mobile-bottom-bar .button {
+      min-height: 42px;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .layout,
+      .daily-grid,
+      .modal-body {
+        grid-template-columns: 1fr;
+      }
+
+      .calendar-panel {
+        position: static;
+      }
+
+      .record-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 12px;
+      }
+
+      .top-actions {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .top-actions .button {
+        flex: 1 1 auto;
+        min-width: 0;
+        white-space: normal;
+      }
+
+      .top-actions .button.primary {
+        grid-column: 1 / -1;
+      }
+
+      .brand-mark {
+        width: 32px;
+        height: 32px;
+      }
+
+      .brand h1 {
+        font-size: 16px;
+      }
+
+      .brand p {
+        display: none;
+      }
+
+      main {
+        width: min(100% - 18px, 1220px);
+        padding-top: 10px;
+        padding-bottom: 86px;
+      }
+
+      .calendar-panel {
+        padding: 12px;
+      }
+
+      .panel-title {
+        margin-bottom: 10px;
+      }
+
+      .panel-title h2 {
+        font-size: 17px;
+      }
+
+      .panel-title p,
+      .calendar-legend {
+        display: none;
+      }
+
+      .calendar-grid {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 2px 1px 4px;
+        scroll-snap-type: x mandatory;
+      }
+
+      .weekday {
+        display: none;
+      }
+
+      .date-button {
+        flex: 0 0 64px;
+        min-height: 58px;
+        scroll-snap-align: start;
+      }
+
+      .date-button span {
+        font-size: 10px;
+      }
+
+      .day-header {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding-bottom: 12px;
+      }
+
+      .day-header h2 {
+        font-size: 30px;
+      }
+
+      .day-header p {
+        margin-top: 7px;
+        font-size: 14px;
+      }
+
+      .status-card {
+        min-width: 0;
+        padding: 11px;
+      }
+
+      .record-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .day-panel,
+      .subpanel {
+        padding: 12px;
+      }
+
+      .daily-grid {
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .food-list li {
+        padding: 9px 10px;
+        font-size: 13px;
+      }
+
+      .exercise-list {
+        gap: 9px;
+      }
+
+      .exercise-button {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .exercise-button strong {
+        font-size: 16px;
+      }
+
+      .exercise-button .sets {
+        width: fit-content;
+      }
+
+      .status-chips {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .status-chip {
+        min-height: 38px;
+      }
+
+      dialog {
+        width: min(100% - 16px, 760px);
+      }
+
+      .modal-head {
+        padding: 12px;
+      }
+
+      .modal-body {
+        padding: 12px;
+      }
+
+      .exercise-visual {
+        min-height: 190px;
+      }
+
+      .record-actions {
+        display: none;
+      }
+
+      .mobile-bottom-bar {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">4W</div>
+      <div>
+        <h1>4周减脂日历训练台</h1>
+        <p>默认今日 · 点日期切换 · 记录会保存在本机浏览器</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="button" type="button" id="todayButton">回到今天</button>
+      <a class="button" href="fitness-plan.ics">导入日历</a>
+      <button class="button primary" type="button" id="copyDay">复制今日记录</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="layout">
+      <aside class="panel calendar-panel">
+        <div class="panel-title">
+          <div>
+            <h2>训练日历</h2>
+            <p>2026-06-01 开始，共 4 周。第 2 周起 A/B 自动交替。</p>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid" aria-label="4周训练日历"></div>
+        <div class="calendar-legend">
+          <span class="legend-dot">力量训练</span>
+          <span class="legend-dot rest">轻活动/复盘</span>
+        </div>
+      </aside>
+
+      <section class="panel day-panel" aria-live="polite">
+        <div class="day-header">
+          <div>
+            <p class="date-kicker" id="dateKicker">今日</p>
+            <h2 id="dayTitle">加载中</h2>
+            <p id="daySummary">正在准备当天计划。</p>
+          </div>
+          <div class="status-card">
+            <label><input type="checkbox" id="doneCheck"> 标记完成</label>
+            <p id="savedHint">记录会自动保存在这个浏览器。</p>
+          </div>
+        </div>
+
+        <div class="daily-grid">
+          <article class="subpanel">
+            <h3>饮食建议</h3>
+            <ul class="food-list" id="foodList"></ul>
+            <div class="safety">当天底线：蛋白质优先，甜饮先停。膝盖或腰疼痛超过 3/10，不硬练。</div>
+          </article>
+
+          <article class="subpanel">
+            <h3>训练计划</h3>
+            <div class="exercise-list" id="exerciseList"></div>
+          </article>
+        </div>
+
+        <section class="subpanel" style="margin-top: 14px;">
+          <h3>今日记录</h3>
+          <div class="record-grid">
+            <div class="field">
+              <label for="weightInput">体重 kg</label>
+              <input id="weightInput" inputmode="decimal" placeholder="例如 107.0">
+            </div>
+            <div class="field">
+              <label for="stepsInput">步数</label>
+              <input id="stepsInput" inputmode="numeric" placeholder="例如 7600">
+            </div>
+            <div class="field">
+              <label for="kneeInput">膝盖疼痛 0-10</label>
+              <input id="kneeInput" inputmode="numeric" placeholder="0">
+            </div>
+            <div class="field">
+              <label for="backInput">腰不适 0-10</label>
+              <input id="backInput" inputmode="numeric" placeholder="0">
+            </div>
+          </div>
+          <div class="notes">
+            <label for="noteInput">备注：跳过了什么、哪台器械不会、饭照情况、加班情况</label>
+            <textarea id="noteInput" placeholder="例如：腿举左膝外侧有点紧，跳过；晚饭鸡胸偏少，补了两个鸡蛋。"></textarea>
+          </div>
+          <div class="record-actions">
+            <button class="button primary" type="button" id="saveButton">保存记录</button>
+            <button class="button" type="button" id="copySelectedDay">复制这天记录</button>
+            <button class="button" type="button" id="exportRecords">备份记录</button>
+            <label class="button" for="importRecords">恢复记录</label>
+            <input id="importRecords" type="file" accept="application/json" style="display: none;">
+            <button class="button warn" type="button" id="clearButton">清空这天</button>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="exerciseDialog">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3 id="modalTitle">动作</h3>
+          <p id="modalSubtitle">组数</p>
+        </div>
+        <button class="button" type="button" id="closeDialog">关闭</button>
+      </div>
+      <div class="modal-body">
+        <div class="exercise-visual" id="modalVisual"></div>
+        <div class="cue-list" id="modalCues"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="recordDialog">
+    <div class="modal">
+      <div class="modal-head">
+        <div>
+          <h3>今日记录</h3>
+          <p>如果手机浏览器不允许自动复制，可以长按下面文本手动复制。</p>
+        </div>
+        <button class="button" type="button" id="closeRecordDialog">关闭</button>
+      </div>
+      <div class="modal-body" style="grid-template-columns: 1fr;">
+        <textarea class="record-output" id="recordOutput" readonly></textarea>
+        <div class="record-actions" style="display: flex;">
+          <button class="button primary" type="button" id="selectRecordText">选中文本</button>
+          <button class="button" type="button" id="shareRecordText">系统分享</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast">已保存</div>
+  <div class="mobile-bottom-bar" aria-label="手机快捷操作">
+    <button class="button" type="button" id="mobileSave">保存</button>
+    <button class="button primary" type="button" id="mobileCopy">复制记录</button>
+    <button class="button" type="button" id="mobileNote">写备注</button>
+  </div>
+
+  <script>
+    const planStart = new Date("2026-06-01T00:00:00+08:00");
+    const dayMs = 24 * 60 * 60 * 1000;
+    const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const calendarWeekdays = ["一", "二", "三", "四", "五", "六", "日"];
+
+    const exercises = {
+      warmup: {
+        title: "椭圆机 / 单车热身",
+        sets: "8-10分钟",
+        target: "启动身体",
+        subtitle: "轻到中等强度，身体微微发热即可。",
+        cues: [
+          ["怎么做", "轻到中等强度，呼吸变快但还能完整说话。"],
+          ["感觉", "身体热起来，膝盖没有不舒服。"],
+          ["别犯错", "别一开始冲强度，膝盖不舒服立刻降阻力。"]
+        ]
+      },
+      chestPress: {
+        title: "坐姿推胸",
+        sets: "3组 x 10-12",
+        target: "胸、手臂后侧",
+        subtitle: "找坐着向前推两个把手的机器，英文常写 Chest Press。",
+        cues: [
+          ["怎么调", "背贴靠背，把手高度调到胸口附近。"],
+          ["怎么做", "往前推到手臂快直，慢慢收回，手肘不锁死。"],
+          ["别犯错", "别耸肩、别屁股离座、别让重量砸回去。"]
+        ]
+      },
+      pulldown: {
+        title: "高位下拉",
+        sets: "3组 x 10-12",
+        target: "背阔肌",
+        subtitle: "找头顶有横杆、坐着往下拉的机器，英文常写 Lat Pulldown。",
+        cues: [
+          ["怎么调", "大腿被垫子压住，双手略宽于肩握杆。"],
+          ["怎么做", "挺胸，把杆拉到锁骨/上胸，慢慢放回去。"],
+          ["别犯错", "别拉到脖子后面，别大幅后仰用腰甩。"]
+        ]
+      },
+      seatedRow: {
+        title: "坐姿划船",
+        sets: "3组 x 10-12",
+        target: "中背、上背",
+        subtitle: "找坐着从前方向身体拉把手的机器，英文常写 Seated Row。",
+        cues: [
+          ["怎么调", "脚踩稳，背挺直，胸口打开。"],
+          ["怎么做", "把手拉向肚脐，想象手肘往后夹。"],
+          ["别犯错", "别弓背，别身体前后大幅摇。"]
+        ]
+      },
+      legPress: {
+        title: "腿举",
+        sets: "2-3组 x 10-12",
+        target: "大腿、臀",
+        subtitle: "找半躺或坐着用脚推大踏板的机器，英文常写 Leg Press。",
+        cues: [
+          ["怎么调", "腰背贴靠背，双脚放踏板中间偏上。"],
+          ["怎么做", "膝盖对准脚尖，弯到约 90 度就推回。"],
+          ["别犯错", "别膝盖内扣，别弯太深，别锁死膝盖。左膝外侧痛就停。"]
+        ]
+      },
+      lateralRaise: {
+        title: "哑铃侧平举",
+        sets: "3组 x 12-15",
+        target: "肩侧束",
+        subtitle: "找轻哑铃，2-5kg 都可能够用。站着或坐着都行。",
+        cues: [
+          ["怎么做", "手臂微弯，从身体两侧抬到肩高。"],
+          ["感觉", "肩膀外侧酸，不需要很重。"],
+          ["别犯错", "别耸肩，别甩，别抬过高。"]
+        ]
+      },
+      shoulderPress: {
+        title: "器械肩推",
+        sets: "3组 x 10-12",
+        target: "肩、手臂后侧",
+        subtitle: "找坐着把把手向上推的机器，英文常写 Shoulder Press。",
+        cues: [
+          ["怎么调", "把手在肩膀附近，背贴靠背。"],
+          ["怎么做", "向上推，手肘快直即可，慢慢放下。"],
+          ["别犯错", "别耸肩，别腰往前顶，别用大重量硬推。"]
+        ]
+      },
+      chestSupportedRow: {
+        title: "坐姿划船 / 胸托划船",
+        sets: "3组 x 10-12",
+        target: "上背、中背",
+        subtitle: "如果有胸口靠垫的划船机，优先用胸托划船，对腰更友好。",
+        cues: [
+          ["怎么做", "胸打开，手肘往后，拉到身体两侧。"],
+          ["感觉", "肩胛骨附近收紧。"],
+          ["别犯错", "别用腰后仰借力。"]
+        ]
+      },
+      legCurl: {
+        title: "腿弯举",
+        sets: "3组 x 10-12",
+        target: "大腿后侧",
+        subtitle: "找坐着或趴着把脚跟往臀部方向弯的机器，英文常写 Leg Curl。",
+        cues: [
+          ["怎么调", "转轴大概对齐膝盖，垫子压在小腿后侧。"],
+          ["怎么做", "脚跟向后弯，顶端停一下，慢慢回。"],
+          ["别犯错", "别弹起来，别屁股离座。"]
+        ]
+      },
+      hipThrust: {
+        title: "臀桥 / 臀推器械",
+        sets: "3组 x 10-12",
+        target: "臀",
+        subtitle: "有臀推器械就用器械；没有就先做徒手臀桥。",
+        cues: [
+          ["怎么做", "顶起来时夹臀，肋骨别外翻。"],
+          ["感觉", "臀部发力，大腿后侧辅助。"],
+          ["别犯错", "别用腰顶到过度后仰。腰不适就减幅度。"]
+        ]
+      },
+      facePull: {
+        title: "绳索面拉",
+        sets: "3组 x 12-15",
+        target: "后肩、上背",
+        subtitle: "找龙门架绳索，把绳子调到脸附近高度，英文常写 Face Pull。",
+        cues: [
+          ["怎么做", "绳子拉向脸两侧，手肘向外打开。"],
+          ["感觉", "后肩和上背酸。"],
+          ["别犯错", "重量轻一点，别身体后仰硬拽。"]
+        ]
+      },
+      deadBug: {
+        title: "死虫核心",
+        sets: "2组 x 8/侧",
+        target: "腹部核心、腰部稳定",
+        subtitle: "找瑜伽垫仰卧，不做仰卧起坐。动作慢，腰保持贴近地面。",
+        cues: [
+          ["怎么做", "仰卧，手臂朝上，髋膝各 90 度；对侧手脚慢慢伸远再收回。"],
+          ["感觉", "腹部收紧，腰没有被拽起来。"],
+          ["别犯错", "别憋气，别追求伸很远；腰离地就缩小幅度。"]
+        ]
+      },
+      walk: {
+        title: "步行 / 椭圆机 / 单车",
+        sets: "30-45分钟",
+        target: "低强度消耗",
+        subtitle: "膝盖舒服时做。不要跑步，不要大坡度爬坡。",
+        cues: [
+          ["怎么做", "能说话的强度，出汗即可。"],
+          ["选择", "优先椭圆机或单车；走路用平地。"],
+          ["别犯错", "膝盖外侧痛就停止，今天只走日常步数。"]
+        ]
+      },
+      review: {
+        title: "周复盘",
+        sets: "15-20分钟",
+        target: "调整计划",
+        subtitle: "看体重 7 日平均、腰围、训练次数、疼痛反馈。",
+        cues: [
+          ["记录", "体重、腰围、本周完成几次。"],
+          ["判断", "如果很累或疼痛升高，下周先不加量。"],
+          ["发给我", "复制记录给 Codex，我帮你调整。"]
+        ]
+      }
+    };
+
+    const workoutA = ["warmup", "chestPress", "pulldown", "seatedRow", "legPress", "lateralRaise", "deadBug"];
+    const workoutB = ["warmup", "shoulderPress", "pulldown", "chestSupportedRow", "legCurl", "hipThrust", "facePull", "deadBug"];
+
+    function baseSvg(title, body) {
+      return `
+        <svg viewBox="0 0 360 190" role="img" aria-label="${title}动作示意图" xmlns="http://www.w3.org/2000/svg">
+          <rect width="360" height="190" fill="transparent"/>
+          <text x="18" y="28" font-size="16" font-weight="800" fill="#1f2933">${title}</text>
+          ${body}
+        </svg>
+      `;
+    }
+
+    const visuals = {
+      warmup: baseSvg("椭圆机 / 单车", '<path d="M68 142 C92 84 145 82 181 137" fill="none" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="105" cy="139" r="22" fill="none" stroke="#315a8c" stroke-width="7"/><circle cx="196" cy="139" r="22" fill="none" stroke="#315a8c" stroke-width="7"/><path d="M137 117 L170 91 L209 103" fill="none" stroke="#315a8c" stroke-width="7" stroke-linecap="round"/><circle cx="164" cy="55" r="13" fill="#1f2933"/><path d="M160 68 L151 99 L128 122" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M153 96 L184 122M155 82 L128 88M155 82 L185 80" fill="none" stroke="#1f2933" stroke-width="7" stroke-linecap="round"/><path d="M252 71 C278 83 292 103 296 132" fill="none" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="299,141 288,126 304,125" fill="#2f7d5c"/><text x="238" y="57" font-size="12" font-weight="700" fill="#2f7d5c">轻到中等强度</text>'),
+      chestPress: baseSvg("坐姿推胸", '<rect x="63" y="102" width="72" height="12" rx="6" fill="#315a8c"/><path d="M91 104 L74 151M125 104 L139 151M85 151 H151" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><path d="M236 64 V150M235 77 H301" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="155" cy="66" r="13" fill="#1f2933"/><path d="M150 79 L133 112 L154 138M137 96 L188 91 L231 80M153 138 L124 151M153 138 L183 151" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M250 82 H301" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="311,82 296,73 296,91" fill="#2f7d5c"/><text x="245" y="63" font-size="12" font-weight="700" fill="#2f7d5c">向前推</text>'),
+      pulldown: baseSvg("高位下拉", '<path d="M74 43 H286M180 43 V79" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><path d="M96 149 H264M117 149 V119 H245 V149" fill="none" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="181" cy="82" r="13" fill="#1f2933"/><path d="M181 96 V128M139 65 L163 103M223 65 L199 103M175 128 L153 151M187 128 L210 151" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M181 51 V72" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="181,82 172,67 190,67" fill="#2f7d5c"/><text x="214" y="93" font-size="12" font-weight="700" fill="#2f7d5c">拉到锁骨</text>'),
+      seatedRow: baseSvg("坐姿划船", '<rect x="59" y="142" width="82" height="11" rx="5" fill="#315a8c"/><path d="M112 142 L96 105M132 142 L147 105" stroke="#315a8c" stroke-width="7" stroke-linecap="round"/><path d="M259 92 V150M240 149 H303" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="161" cy="69" r="13" fill="#1f2933"/><path d="M157 82 L144 112 L165 134M147 101 L193 103 L243 96M166 134 L135 149M166 134 L197 149" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M238 96 H199" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="189,96 204,87 204,105" fill="#2f7d5c"/><text x="207" y="77" font-size="12" font-weight="700" fill="#2f7d5c">拉向肚脐</text>'),
+      legPress: baseSvg("腿举", '<path d="M228 54 L292 129" stroke="#315a8c" stroke-width="12" stroke-linecap="round"/><rect x="69" y="129" width="104" height="14" rx="7" fill="#315a8c"/><path d="M91 132 L70 158M160 133 L178 158" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="124" cy="82" r="13" fill="#1f2933"/><path d="M118 95 L98 126 L139 135M137 134 L190 108 L228 90M147 136 L198 124 L244 116" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M235 103 L264 79" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="272,72 264,89 253,76" fill="#2f7d5c"/><text x="226" y="153" font-size="12" font-weight="700" fill="#b42318">左膝痛就停</text>'),
+      lateralRaise: baseSvg("哑铃侧平举", '<circle cx="181" cy="60" r="14" fill="#1f2933"/><path d="M181 75 V121M181 86 L124 92M181 86 L238 92M176 121 L153 155M186 121 L209 155" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><rect x="101" y="84" width="20" height="14" rx="4" fill="#315a8c"/><rect x="240" y="84" width="20" height="14" rx="4" fill="#315a8c"/><path d="M122 122 C112 107 111 95 118 79M239 122 C249 107 250 95 243 79" fill="none" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="123,70 125,88 109,81" fill="#2f7d5c"/><polygon points="238,70 252,81 236,88" fill="#2f7d5c"/><text x="141" y="174" font-size="12" font-weight="700" fill="#2f7d5c">抬到肩高，不耸肩</text>'),
+      shoulderPress: baseSvg("器械肩推", '<rect x="80" y="133" width="92" height="12" rx="6" fill="#315a8c"/><path d="M106 134 L90 160M159 134 L175 160" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><path d="M241 56 V151M219 58 H292" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="159" cy="82" r="13" fill="#1f2933"/><path d="M154 95 L139 126 L161 140M143 104 L187 72 L229 62M163 140 L133 153M164 140 L193 153" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M230 93 V62" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="230,51 221,67 239,67" fill="#2f7d5c"/><text x="246" y="87" font-size="12" font-weight="700" fill="#2f7d5c">向上推</text>'),
+      chestSupportedRow: baseSvg("胸托划船", '<rect x="92" y="130" width="95" height="14" rx="7" fill="#315a8c"/><path d="M133 130 L115 158M178 130 L194 158" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><path d="M191 83 L160 126" stroke="#315a8c" stroke-width="12" stroke-linecap="round"/><path d="M263 82 V151M243 150 H303" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="151" cy="70" r="13" fill="#1f2933"/><path d="M155 83 L175 111M166 95 L207 97 L247 89M175 112 L151 145M176 112 L209 145" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M242 90 H211" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="201,90 216,81 216,99" fill="#2f7d5c"/><text x="207" y="72" font-size="12" font-weight="700" fill="#2f7d5c">胸贴垫子</text>'),
+      legCurl: baseSvg("腿弯举", '<rect x="77" y="111" width="116" height="13" rx="6" fill="#315a8c"/><path d="M100 123 L82 156M184 123 L204 156" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="127" cy="74" r="13" fill="#1f2933"/><path d="M123 87 L106 112 L142 122M143 122 L201 127 L244 118" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><circle cx="255" cy="116" r="15" fill="none" stroke="#315a8c" stroke-width="7"/><path d="M245 116 C232 130 221 137 203 139" fill="none" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="194,140 210,131 211,148" fill="#2f7d5c"/><text x="216" y="94" font-size="12" font-weight="700" fill="#2f7d5c">脚跟往回弯</text>'),
+      hipThrust: baseSvg("臀桥 / 臀推", '<rect x="76" y="128" width="210" height="12" rx="6" fill="#315a8c"/><rect x="72" y="91" width="68" height="16" rx="8" fill="#315a8c"/><circle cx="132" cy="84" r="13" fill="#1f2933"/><path d="M144 94 L193 105 L239 126M239 126 L266 151M240 126 L206 151" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M175 121 C186 99 203 90 227 91" fill="none" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="237,92 220,83 220,101" fill="#2f7d5c"/><text x="190" y="78" font-size="12" font-weight="700" fill="#2f7d5c">顶起时夹臀</text>'),
+      facePull: baseSvg("绳索面拉", '<path d="M271 49 V151M247 49 H297M247 151 H297" stroke="#315a8c" stroke-width="8" stroke-linecap="round"/><circle cx="154" cy="79" r="13" fill="#1f2933"/><path d="M154 93 V132M151 104 L113 91M157 104 L198 91M149 132 L128 158M160 132 L183 158" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M199 91 L270 76M113 91 L270 76" stroke="#315a8c" stroke-width="4" stroke-linecap="round"/><path d="M265 76 H207" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="197,76 212,67 212,85" fill="#2f7d5c"/><text x="199" y="58" font-size="12" font-weight="700" fill="#2f7d5c">拉向脸两侧</text>'),
+      deadBug: baseSvg("死虫核心", '<rect x="72" y="139" width="220" height="10" rx="5" fill="#315a8c"/><circle cx="164" cy="89" r="13" fill="#1f2933"/><path d="M170 99 L196 122M196 122 L233 125M196 122 L219 94M172 100 L145 121M145 121 L112 107M145 121 L124 151" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M228 95 C245 106 252 119 253 137" fill="none" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="252,148 244,132 262,132" fill="#2f7d5c"/><text x="91" y="56" font-size="12" font-weight="700" fill="#2f7d5c">腰贴近地面，慢慢伸远</text>'),
+      walk: baseSvg("低强度有氧", '<circle cx="154" cy="57" r="13" fill="#1f2933"/><path d="M151 70 L139 105 L162 127M142 98 L112 107M145 103 L177 96M162 127 L135 158M164 127 L198 154" fill="none" stroke="#1f2933" stroke-width="8" stroke-linecap="round"/><path d="M228 83 C252 99 262 120 262 149" fill="none" stroke="#2f7d5c" stroke-width="5" stroke-linecap="round"/><polygon points="261,160 253,143 271,144" fill="#2f7d5c"/><text x="218" y="65" font-size="12" font-weight="700" fill="#2f7d5c">能说话的强度</text>'),
+      review: baseSvg("周复盘", '<rect x="74" y="61" width="210" height="92" rx="8" fill="#fff" stroke="#315a8c" stroke-width="7"/><path d="M102 96 H253M102 123 H226" stroke="#315a8c" stroke-width="7" stroke-linecap="round"/><circle cx="105" cy="96" r="11" fill="#2f7d5c"/><path d="M99 96 L104 102 L114 88" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/><text x="92" y="45" font-size="12" font-weight="700" fill="#2f7d5c">体重、腰围、疼痛反馈</text>')
+    };
+
+    function formatDate(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function addDays(date, days) {
+      const next = new Date(date);
+      next.setDate(next.getDate() + days);
+      return next;
+    }
+
+    function diffDays(date) {
+      const a = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const b = new Date(planStart.getFullYear(), planStart.getMonth(), planStart.getDate());
+      return Math.round((a - b) / dayMs);
+    }
+
+    function getWorkoutType(index) {
+      const week = Math.floor(index / 7);
+      const weekday = index % 7;
+      const oddWeek = week % 2 === 1;
+      if (weekday === 0) return oddWeek ? "B" : "A";
+      if (weekday === 2) return oddWeek ? "A" : "B";
+      if (weekday === 4) return oddWeek ? "B" : "A";
+      return null;
+    }
+
+    function getDayPlan(index) {
+      const date = addDays(planStart, index);
+      const weekday = index % 7;
+      const type = getWorkoutType(index);
+      if (type) {
+        return {
+          date,
+          key: formatDate(date),
+          title: `力量 ${type}`,
+          label: `第 ${Math.floor(index / 7) + 1} 周 · ${weekdays[date.getDay()]}`,
+          summary: type === "A" ? "胸、背、腿、肩。晚饭前练，练完 20:00 左右吃晚饭。" : "背、肩、臀腿、核心。腰不舒服就减少幅度或跳过动作。",
+          exercises: type === "A" ? workoutA : workoutB,
+          food: [
+            ["午餐", "鸡胸或虾优先；肉不够就补鸡蛋、牛奶、无糖酸奶或高蛋白奶。"],
+            ["训练前", "如果饿，吃香蕉、牛奶或无糖酸奶；不要空腹硬练。"],
+            ["训练后晚饭", "蛋白质 + 蔬菜 + 半拳到一拳主食，少酱汁，不加夜宵。"]
+          ]
+        };
+      }
+      if (weekday === 5) {
+        return {
+          date,
+          key: formatDate(date),
+          title: "可选有氧 / 休息",
+          label: `第 ${Math.floor(index / 7) + 1} 周 · ${weekdays[date.getDay()]}`,
+          summary: "精神好就低强度活动 30-45 分钟，累就休息。",
+          exercises: ["walk"],
+          food: [
+            ["三餐", "维持蛋白质优先，不因为休息日而少吃肉。"],
+            ["主食", "正常半拳到一拳，避免晚间零食。"],
+            ["补水", "今天重点是恢复，不是加练。"]
+          ]
+        };
+      }
+      if (weekday === 6) {
+        return {
+          date,
+          key: formatDate(date),
+          title: "周复盘",
+          label: `第 ${Math.floor(index / 7) + 1} 周 · ${weekdays[date.getDay()]}`,
+          summary: "称体重、量腰围、看本周完成次数和疼痛反馈。",
+          exercises: ["review"],
+          food: [
+            ["复盘", "看 7 日平均体重，不被单日波动影响。"],
+            ["准备", "如果下周训练日会加班，提前选替补训练日。"],
+            ["发给我", "复制本周记录或今天备注，我帮你调整。"]
+          ]
+        };
+      }
+      return {
+        date,
+        key: formatDate(date),
+        title: "轻活动",
+        label: `第 ${Math.floor(index / 7) + 1} 周 · ${weekdays[date.getDay()]}`,
+        summary: "7000-9000 步，膝盖舒服时可单车或椭圆机 30 分钟。",
+        exercises: ["walk"],
+        food: [
+          ["早餐", "赶不上也可以；别让午餐变成报复性进食。"],
+          ["午餐", "轻食肉少就补鸡蛋、牛奶或无糖酸奶。"],
+          ["晚饭", "蛋白质和蔬菜先吃，主食半拳到一拳。"]
+        ]
+      };
+    }
+
+    const plans = Array.from({ length: 28 }, (_, index) => getDayPlan(index));
+    const todayKey = formatDate(new Date());
+    const todayIndex = plans.findIndex((plan) => plan.key === todayKey);
+    let selectedIndex = todayIndex >= 0 ? todayIndex : 0;
+    let lastRecordText = "";
+
+    const storagePrefix = "fit-bootcamp-v2-";
+    const fields = {
+      done: document.getElementById("doneCheck"),
+      weight: document.getElementById("weightInput"),
+      steps: document.getElementById("stepsInput"),
+      knee: document.getElementById("kneeInput"),
+      back: document.getElementById("backInput"),
+      note: document.getElementById("noteInput")
+    };
+
+    function readRecord(key) {
+      try {
+        return JSON.parse(localStorage.getItem(storagePrefix + key) || "{}");
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function writeRecord(key, data) {
+      localStorage.setItem(storagePrefix + key, JSON.stringify(data));
+      document.getElementById("savedHint").textContent = "已保存在当前手机/浏览器。需要换设备时用备份/恢复。";
+    }
+
+    function currentRecord() {
+      const exerciseStatus = {};
+      document.querySelectorAll("[data-status-action].active").forEach((button) => {
+        exerciseStatus[button.dataset.exercise] = button.dataset.status;
+      });
+      return {
+        done: fields.done.checked,
+        weight: fields.weight.value.trim(),
+        steps: fields.steps.value.trim(),
+        knee: fields.knee.value.trim(),
+        back: fields.back.value.trim(),
+        note: fields.note.value.trim(),
+        exerciseStatus,
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    function saveSelected(showMessage = true) {
+      const plan = plans[selectedIndex];
+      writeRecord(plan.key, currentRecord());
+      renderCalendar();
+      if (showMessage) showToast("已保存这天记录");
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById("calendarGrid");
+      grid.innerHTML = "";
+      calendarWeekdays.forEach((day) => {
+        const div = document.createElement("div");
+        div.className = "weekday";
+        div.textContent = day;
+        grid.appendChild(div);
+      });
+      plans.forEach((plan, index) => {
+        const record = readRecord(plan.key);
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "date-button";
+        if (plan.key === todayKey) button.classList.add("today");
+        if (index === selectedIndex) button.classList.add("selected");
+        if (record.done) button.classList.add("done");
+        button.innerHTML = `<strong>${plan.date.getDate()}</strong><span>${plan.title}</span>`;
+        button.addEventListener("click", () => {
+          saveSelected(false);
+          selectedIndex = index;
+          renderSelectedDay();
+        });
+        grid.appendChild(button);
+      });
+    }
+
+    function renderSelectedDay() {
+      const plan = plans[selectedIndex];
+      const record = readRecord(plan.key);
+      document.getElementById("dateKicker").textContent = `${plan.key} · ${plan.label}`;
+      document.getElementById("dayTitle").textContent = plan.title;
+      document.getElementById("daySummary").textContent = plan.summary;
+      document.getElementById("foodList").innerHTML = plan.food.map(([title, text]) => `<li><strong>${title}：</strong>${text}</li>`).join("");
+      document.getElementById("exerciseList").innerHTML = plan.exercises.map((id) => {
+        const exercise = exercises[id];
+        const status = record.exerciseStatus?.[id] || "";
+        return `
+          <div class="exercise-item" data-exercise-item="${id}">
+            <button class="exercise-button" type="button" data-exercise-detail="${id}">
+              <span><strong>${exercise.title}</strong><span>${exercise.target} · ${exercise.subtitle}</span></span>
+              <span class="sets">${exercise.sets}</span>
+            </button>
+            <div class="status-chips" aria-label="${exercise.title}记录">
+              <button class="status-chip ${status === "done" ? "active" : ""}" type="button" data-status-action data-exercise="${id}" data-status="done">完成</button>
+              <button class="status-chip ${status === "skip" ? "active" : ""}" type="button" data-status-action data-exercise="${id}" data-status="skip">跳过</button>
+              <button class="status-chip ${status === "pain" ? "active" : ""}" type="button" data-status-action data-exercise="${id}" data-status="pain">疼痛</button>
+              <button class="status-chip" type="button" data-status-action data-exercise="${id}" data-status="clear">清除</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+      fields.done.checked = Boolean(record.done);
+      fields.weight.value = record.weight || "";
+      fields.steps.value = record.steps || "";
+      fields.knee.value = record.knee || "";
+      fields.back.value = record.back || "";
+      fields.note.value = record.note || "";
+      document.querySelectorAll("[data-exercise-detail]").forEach((button) => {
+        button.addEventListener("click", () => openExercise(button.dataset.exerciseDetail));
+      });
+      document.querySelectorAll("[data-status-action]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const group = document.querySelectorAll(`[data-status-action][data-exercise="${button.dataset.exercise}"]`);
+          group.forEach((item) => item.classList.remove("active"));
+          if (button.dataset.status !== "clear") button.classList.add("active");
+          saveSelected(false);
+        });
+      });
+      renderCalendar();
+    }
+
+    function openExercise(id) {
+      const exercise = exercises[id];
+      document.getElementById("modalTitle").textContent = exercise.title;
+      document.getElementById("modalSubtitle").textContent = `${exercise.sets} · ${exercise.target}`;
+      document.getElementById("modalVisual").innerHTML = visuals[id] || "";
+      document.getElementById("modalCues").innerHTML = exercise.cues.map(([title, text]) => `
+        <div class="cue"><strong>${title}</strong><p>${text}</p></div>
+      `).join("");
+      document.getElementById("exerciseDialog").showModal();
+    }
+
+    function buildRecordText(index = selectedIndex) {
+      const plan = plans[index];
+      const record = index === selectedIndex ? currentRecord() : readRecord(plan.key);
+      const exerciseNames = plan.exercises.map((id) => `${exercises[id].title}（${exercises[id].sets}）`).join("；");
+      const statusMap = { done: "完成", skip: "跳过", pain: "疼痛" };
+      const exerciseStatus = plan.exercises
+        .map((id) => `${exercises[id].title}：${statusMap[record.exerciseStatus?.[id]] || "未标记"}`)
+        .join("；");
+      return [
+        `日期：${plan.key} ${plan.label}`,
+        `计划：${plan.title}`,
+        `训练内容：${exerciseNames}`,
+        `动作记录：${exerciseStatus}`,
+        `完成：${record.done ? "是" : "否"}`,
+        `体重：${record.weight || ""}`,
+        `步数：${record.steps || ""}`,
+        `膝盖疼痛：${record.knee || ""}`,
+        `腰不适：${record.back || ""}`,
+        `备注：${record.note || ""}`
+      ].join("\\n");
+    }
+
+    async function copyRecord(index = selectedIndex) {
+      saveSelected(false);
+      const text = buildRecordText(index);
+      lastRecordText = text;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast("已复制记录，可以发给 Codex");
+      } catch (error) {
+        showRecordDialog(text);
+        showToast("自动复制失败，已打开手动复制");
+      }
+    }
+
+    function showRecordDialog(text) {
+      lastRecordText = text;
+      const output = document.getElementById("recordOutput");
+      output.value = text;
+      document.getElementById("recordDialog").showModal();
+      window.setTimeout(() => {
+        output.focus();
+        output.select();
+      }, 80);
+    }
+
+    const toast = document.getElementById("toast");
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      window.setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    Object.values(fields).forEach((field) => {
+      field.addEventListener("input", () => saveSelected(false));
+      field.addEventListener("change", () => saveSelected(false));
+    });
+
+    document.getElementById("saveButton").addEventListener("click", () => saveSelected(true));
+    document.getElementById("copySelectedDay").addEventListener("click", () => copyRecord(selectedIndex));
+    document.getElementById("copyDay").addEventListener("click", () => copyRecord(selectedIndex));
+    document.getElementById("mobileSave").addEventListener("click", () => saveSelected(true));
+    document.getElementById("mobileCopy").addEventListener("click", () => copyRecord(selectedIndex));
+    document.getElementById("mobileNote").addEventListener("click", () => {
+      document.getElementById("noteInput").scrollIntoView({ block: "center" });
+      document.getElementById("noteInput").focus();
+    });
+    document.getElementById("todayButton").addEventListener("click", () => {
+      saveSelected(false);
+      selectedIndex = todayIndex >= 0 ? todayIndex : 0;
+      renderSelectedDay();
+    });
+    document.getElementById("clearButton").addEventListener("click", () => {
+      const plan = plans[selectedIndex];
+      localStorage.removeItem(storagePrefix + plan.key);
+      renderSelectedDay();
+      showToast("已清空这天记录");
+    });
+    document.getElementById("exportRecords").addEventListener("click", () => {
+      const records = {};
+      plans.forEach((plan) => {
+        const record = readRecord(plan.key);
+        if (Object.keys(record).length) records[plan.key] = record;
+      });
+      const blob = new Blob([JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), records }, null, 2)], {
+        type: "application/json"
+      });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `fitness-records-${todayKey}.json`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      showToast("已生成记录备份");
+    });
+    document.getElementById("importRecords").addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const payload = JSON.parse(await file.text());
+        Object.entries(payload.records || {}).forEach(([key, record]) => {
+          localStorage.setItem(storagePrefix + key, JSON.stringify(record));
+        });
+        renderSelectedDay();
+        showToast("已恢复记录");
+      } catch (error) {
+        showToast("恢复失败，文件格式不对");
+      } finally {
+        event.target.value = "";
+      }
+    });
+    document.getElementById("closeDialog").addEventListener("click", () => {
+      document.getElementById("exerciseDialog").close();
+    });
+    document.getElementById("exerciseDialog").addEventListener("click", (event) => {
+      if (event.target.id === "exerciseDialog") event.target.close();
+    });
+    document.getElementById("closeRecordDialog").addEventListener("click", () => {
+      document.getElementById("recordDialog").close();
+    });
+    document.getElementById("recordDialog").addEventListener("click", (event) => {
+      if (event.target.id === "recordDialog") event.target.close();
+    });
+    document.getElementById("selectRecordText").addEventListener("click", () => {
+      const output = document.getElementById("recordOutput");
+      output.focus();
+      output.select();
+      showToast("已选中，长按或复制即可");
+    });
+    document.getElementById("shareRecordText").addEventListener("click", async () => {
+      if (navigator.share) {
+        await navigator.share({ text: lastRecordText });
+      } else {
+        showToast("当前浏览器不支持系统分享");
+      }
+    });
+
+    renderSelectedDay();
+  </script>
+</body>
+</html>
