@@ -1026,6 +1026,7 @@
         </div>
         <div class="record-actions" style="display: flex;">
           <button class="button primary" type="button" id="saveCloudSettings">保存云设置</button>
+          <button class="button" type="button" id="testCloudButton">测试连接</button>
           <button class="button" type="button" id="loadCloudButton">读取这天云记录</button>
           <button class="button warn" type="button" id="clearCloudToken">清除 token</button>
         </div>
@@ -1403,11 +1404,47 @@
         }
       });
       if (!response.ok) {
-        const error = new Error(`github-${response.status}`);
+        let detail = "";
+        try {
+          const payload = await response.json();
+          detail = payload.message || "";
+        } catch (parseError) {
+          detail = response.statusText || "";
+        }
+        const error = new Error(githubErrorMessage(response.status, detail));
         error.status = response.status;
+        error.detail = detail;
         throw error;
       }
       return response.json();
+    }
+
+    function githubErrorMessage(status, detail = "") {
+      const suffix = detail ? `（${detail}）` : "";
+      if (status === 401) return `401：token 无效或已过期${suffix}`;
+      if (status === 403) return `403：token 权限不够，需要 Contents: Read and write${suffix}`;
+      if (status === 404) return `404：访问不到仓库，请确认仓库名和 token 是否选择了 fitness-plan-records${suffix}`;
+      if (status === 422) return `422：GitHub 拒绝写入内容${suffix}`;
+      return `${status}：GitHub 请求失败${suffix}`;
+    }
+
+    async function testCloudConnection() {
+      const { owner, repo } = readCloudSettings();
+      try {
+        await githubRequest(`/repos/${owner}/${repo}`);
+        setCloudStatus("云连接正常：token 可以访问私密记录仓库。");
+        showToast("云连接正常");
+        return true;
+      } catch (error) {
+        if (error.message === "missing-token") {
+          setCloudStatus("未配置 token：请在云记录里粘贴 GitHub token。");
+          showCloudDialog();
+        } else {
+          setCloudStatus(`云连接失败：${error.message}`);
+          showToast("云连接失败");
+        }
+        return false;
+      }
     }
 
     async function readCloudRecord(key, showMessage = true) {
@@ -1493,7 +1530,7 @@
           showToast("已同步到云端");
         } catch (error) {
           if (error.message === "missing-token") showCloudDialog();
-          setCloudStatus("已保存在本机；云端同步失败，请检查 token 和记录仓库权限。");
+          setCloudStatus(`已保存在本机；云端同步失败：${error.message}`);
           showToast("本机已保存，云端失败");
         }
       } else if (showMessage) {
@@ -1730,6 +1767,12 @@
       document.getElementById("cloudDialog").close();
       setCloudStatus("云记录已配置；点保存会同步到 GitHub 私密仓库。");
       showToast("云记录已配置");
+    });
+    document.getElementById("testCloudButton").addEventListener("click", async () => {
+      localStorage.setItem(cloudPrefix + "owner", document.getElementById("cloudOwnerInput").value.trim() || defaultCloudOwner);
+      localStorage.setItem(cloudPrefix + "repo", document.getElementById("cloudRepoInput").value.trim() || defaultCloudRepo);
+      localStorage.setItem(cloudPrefix + "token", document.getElementById("githubTokenInput").value.trim());
+      await testCloudConnection();
     });
     document.getElementById("loadCloudButton").addEventListener("click", async () => {
       const plan = plans[selectedIndex];
