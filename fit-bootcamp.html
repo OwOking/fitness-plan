@@ -882,7 +882,7 @@
     <div class="top-actions">
       <button class="button" type="button" id="todayButton">回到今天</button>
       <a class="button" href="fitness-plan.ics">导入日历</a>
-      <button class="button" type="button" id="cloudSettingsButton">云记录</button>
+      <button class="button" type="button" id="cloudSettingsButton">设置</button>
       <button class="button primary" type="button" id="copyDay">复制今日记录</button>
     </div>
   </header>
@@ -948,7 +948,7 @@
           </div>
           <div class="record-actions">
             <button class="button primary" type="button" id="saveButton">保存记录</button>
-            <button class="button" type="button" id="syncCloudButton">同步云端</button>
+            <button class="button" type="button" id="cloudSettingsInline">设置</button>
             <button class="button" type="button" id="copySelectedDay">复制这天记录</button>
             <button class="button" type="button" id="exportRecords">备份记录</button>
             <label class="button" for="importRecords">恢复记录</label>
@@ -1034,9 +1034,9 @@
 
   <div class="toast" id="toast">已保存</div>
   <div class="mobile-bottom-bar" aria-label="手机快捷操作">
-    <button class="button" type="button" id="mobileSave">保存</button>
-    <button class="button primary" type="button" id="mobileCloud">云记录</button>
-    <button class="button" type="button" id="mobileNote">写备注</button>
+    <button class="button primary" type="button" id="mobileSave">保存</button>
+    <button class="button" type="button" id="mobileNote">备注</button>
+    <button class="button" type="button" id="mobileSettings">设置</button>
   </div>
 
   <script>
@@ -1686,16 +1686,16 @@
     });
 
     document.getElementById("saveButton").addEventListener("click", () => saveSelected(true));
-    document.getElementById("syncCloudButton").addEventListener("click", () => saveSelected(true));
+    document.getElementById("cloudSettingsInline").addEventListener("click", showCloudDialog);
     document.getElementById("copySelectedDay").addEventListener("click", () => copyRecord(selectedIndex));
     document.getElementById("copyDay").addEventListener("click", () => copyRecord(selectedIndex));
     document.getElementById("cloudSettingsButton").addEventListener("click", showCloudDialog);
     document.getElementById("mobileSave").addEventListener("click", () => saveSelected(true));
-    document.getElementById("mobileCloud").addEventListener("click", showCloudDialog);
     document.getElementById("mobileNote").addEventListener("click", () => {
       document.getElementById("noteInput").scrollIntoView({ block: "center" });
       document.getElementById("noteInput").focus();
     });
+    document.getElementById("mobileSettings").addEventListener("click", showCloudDialog);
     document.getElementById("todayButton").addEventListener("click", () => {
       saveSelected(false);
       selectedIndex = todayIndex >= 0 ? todayIndex : 0;
