@@ -48,9 +48,6 @@
     }
 
     .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 20;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -168,7 +165,7 @@
 
     .calendar-panel {
       position: sticky;
-      top: 82px;
+      top: 16px;
       overflow: hidden;
       padding: 16px;
     }
@@ -349,6 +346,10 @@
       display: grid;
       grid-template-columns: 1fr 1.2fr;
       gap: 14px;
+      margin-top: 16px;
+    }
+
+    .workout-panel {
       margin-top: 16px;
     }
 
@@ -696,10 +697,7 @@
 
     @media (max-width: 640px) {
       .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px 12px;
+        display: none;
       }
 
       .top-actions {
@@ -732,13 +730,21 @@
       }
 
       main {
-        width: min(100% - 18px, 1220px);
-        padding-top: 10px;
+        width: min(100% - 16px, 1220px);
+        padding-top: 8px;
         padding-bottom: 86px;
       }
 
       .calendar-panel {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        margin-inline: -8px;
         padding: 12px;
+        border-radius: 0 0 8px 8px;
+        border-top: 0;
+        background: rgba(245, 246, 242, 0.96);
+        backdrop-filter: blur(14px);
       }
 
       .panel-title {
@@ -805,8 +811,7 @@
         padding: 12px;
       }
 
-      .daily-grid {
-        gap: 10px;
+      .workout-panel {
         margin-top: 10px;
       }
 
@@ -911,18 +916,11 @@
           </div>
         </div>
 
-        <div class="daily-grid">
-          <article class="subpanel">
-            <h3>饮食建议</h3>
-            <ul class="food-list" id="foodList"></ul>
-            <div class="safety">当天底线：蛋白质优先，甜饮先停。膝盖或腰疼痛超过 3/10，不硬练。</div>
-          </article>
-
-          <article class="subpanel">
-            <h3>训练计划</h3>
-            <div class="exercise-list" id="exerciseList"></div>
-          </article>
-        </div>
+        <article class="subpanel workout-panel">
+          <h3>训练计划</h3>
+          <div class="exercise-list" id="exerciseList"></div>
+          <div class="safety">膝盖或腰疼痛超过 3/10，不硬练。点动作看要领，点完成/跳过/疼痛做记录。</div>
+        </article>
 
         <section class="subpanel" style="margin-top: 14px;">
           <h3>今日记录</h3>
@@ -1037,7 +1035,7 @@
   <div class="toast" id="toast">已保存</div>
   <div class="mobile-bottom-bar" aria-label="手机快捷操作">
     <button class="button" type="button" id="mobileSave">保存</button>
-    <button class="button primary" type="button" id="mobileCopy">复制记录</button>
+    <button class="button primary" type="button" id="mobileCloud">云记录</button>
     <button class="button" type="button" id="mobileNote">写备注</button>
   </div>
 
@@ -1571,7 +1569,6 @@
       document.getElementById("dateKicker").textContent = `${plan.key} · ${plan.label}`;
       document.getElementById("dayTitle").textContent = plan.title;
       document.getElementById("daySummary").textContent = plan.summary;
-      document.getElementById("foodList").innerHTML = plan.food.map(([title, text]) => `<li><strong>${title}：</strong>${text}</li>`).join("");
       document.getElementById("exerciseList").innerHTML = plan.exercises.map((id) => {
         const exercise = exercises[id];
         const status = record.exerciseStatus?.[id] || "";
@@ -1694,7 +1691,7 @@
     document.getElementById("copyDay").addEventListener("click", () => copyRecord(selectedIndex));
     document.getElementById("cloudSettingsButton").addEventListener("click", showCloudDialog);
     document.getElementById("mobileSave").addEventListener("click", () => saveSelected(true));
-    document.getElementById("mobileCopy").addEventListener("click", () => copyRecord(selectedIndex));
+    document.getElementById("mobileCloud").addEventListener("click", showCloudDialog);
     document.getElementById("mobileNote").addEventListener("click", () => {
       document.getElementById("noteInput").scrollIntoView({ block: "center" });
       document.getElementById("noteInput").focus();
